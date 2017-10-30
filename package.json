@@ -2,7 +2,7 @@
 	"name": "vscode-conemu",
 	"displayName": "ConEmu Launcher",
 	"description": "ConEmu Launcher for VS Code",
-	"version": "1.0.4",
+	"version": "1.1.0",
 	"author": "Ireneusz Patalas",
 	"publisher": "ipatalas",
 	"engines": {
@@ -44,6 +44,11 @@
 					"type": "boolean",
 					"description": "Flag indicating whether to use existing instance of ConEmu or open new window",
 					"default": true
+				},
+				"ConEmu.runCommand": {
+					"type": "string",
+					"description": "Optional command line/task/run list that ConEmu will execute on opening a tab",
+					"default": ""
 				},
 				"ConEmu.showTitlebarIcon": {
 					"type": "boolean",

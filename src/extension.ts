@@ -4,10 +4,30 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as child from 'child_process';
 
+// ------------------------------------------------------------
+
 // tslint:disable-next-line:no-var-requires
 const pkg = require('../../package.json');
 
 const isCompatiblePlatform = process.platform === 'win32';
+
+// ------------------------------------------------------------
+
+let outputChannel: vscode.OutputChannel = null;
+
+function writeOutput(line: string, showChannel: boolean = false): void {
+	if (!outputChannel) {
+		outputChannel = vscode.window.createOutputChannel(pkg.displayName);
+	}
+
+	outputChannel.appendLine(line)
+
+	if (showChannel) {
+		outputChannel.show(true);
+	}
+}
+
+// ------------------------------------------------------------
 
 export function activate(context: vscode.ExtensionContext) {
 	if (!isCompatiblePlatform) {
@@ -22,40 +42,72 @@ export function activate(context: vscode.ExtensionContext) {
 		// tslint:disable-next-line:curly
 		if (!isCompatiblePlatform || !checkConfiguration()) return;
 
+		let target = null;
+
 		if (uri && uri.scheme && uri.scheme !== "untitled") {
-			runConEmu(path.dirname(uri.fsPath));
+			target = path.dirname(uri.fsPath);
 		} else if (vscode.window.activeTextEditor && !vscode.window.activeTextEditor.document.isUntitled) {
-			runConEmu(path.dirname(vscode.window.activeTextEditor.document.uri.fsPath));
+			target = path.dirname(vscode.window.activeTextEditor.document.uri.fsPath);
 		} else if (vscode.workspace.rootPath) {
-			runConEmu(vscode.workspace.rootPath);
+			target = vscode.workspace.rootPath;
 		}
+
+		writeOutput(`vscode.conemu(uri: ${uri.toString()}, target: ${target})`);
+
+		runConEmu(target);
 	}));
 }
 
-const runConEmu = (path: string) => {
-	const config = getConfig();
-	const reuseInstanceArg = config.reuseInstance ? "-Single" : "-NoSingle";
+// ------------------------------------------------------------
 
+const runConEmu = (path: string) => {
 	const quote = (p: string) => p.includes(" ") ? `"${p}"` : p;
 
-	child.exec(`${quote(config.path)} -dir ${quote(path)} ${reuseInstanceArg}`, (error: Error, _stdout: string, stderr: string) => {
-		if (error || stderr) {
-			const outputChannel = vscode.window.createOutputChannel(pkg.displayName);
+	const config = getConfig();
 
-			if (error) {
-				outputChannel.appendLine(error.message);
-			}
+	const reuseInstanceArg = config.reuseInstance ? "-Single" : "-NoSingle";
 
-			if (stderr) {
-				outputChannel.appendLine(stderr);
-			}
+	let cmd = `${quote(config.path)} ${reuseInstanceArg} -Dir ${quote(path)}`;
 
-			outputChannel.show();
+	if (config.runCommand) {
+		cmd += ` -Run ${quote(config.runCommand)}`;
+	}
+
+	writeOutput(`config: ${JSON.stringify(config, null, 2)}\n\ncommand: ${cmd}`);
+
+	child.exec(cmd, (error: Error, _stdout: string, stderr: string) => {
+		if (error) {
+			writeOutput(`error: ${error.message}`, true);
+		}
+
+		if (stderr) {
+			writeOutput(`stderr: ${stderr}`, true);
 		}
 	});
 };
 
+// ------------------------------------------------------------
+
+interface IConfig {
+	path: string;
+	reuseInstance: boolean;
+	runCommand: string;
+	showTitlebarIcon: boolean;
+}
+
+// ------------------------------------------------------------
+
+const getConfig = () => vscode.workspace.getConfiguration("ConEmu") as any as IConfig;
+
+// ------------------------------------------------------------
+
 const checkConfiguration = () => {
+	const openSettingsCallback = (btn) => {
+		if (btn === messages.OpenSettings) {
+			vscode.commands.executeCommand("workbench.action.openGlobalSettings");
+		}
+	};
+
 	const config = getConfig();
 
 	if (!config.path) {
@@ -71,17 +123,7 @@ const checkConfiguration = () => {
 	return true;
 };
 
-const getConfig = () => vscode.workspace.getConfiguration("ConEmu") as any as IConfig;
-
-const openSettingsCallback = (btn) => {
-	if (btn === messages.OpenSettings) {
-		vscode.commands.executeCommand("workbench.action.openGlobalSettings");
-	}
-};
-interface IConfig {
-	path: string;
-	reuseInstance: boolean;
-}
+// ------------------------------------------------------------
 
 const messages = {
 	WindowsOnly: "This extension works only on Windows, sorry",
