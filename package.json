@@ -25,14 +25,16 @@
 	},
 	"main": "./out/src/extension",
 	"contributes": {
-		"commands": [{
-			"command": "vscode.conemu",
-			"title": "Open in ConEmu",
-			"icon": {
-				"dark": "./images/dark-icon.png",
-				"light": "./images/light-icon.png"
+		"commands": [
+			{
+				"command": "vscode.conemu",
+				"title": "Open in ConEmu",
+				"icon": {
+					"dark": "./images/dark-icon.png",
+					"light": "./images/light-icon.png"
+				}
 			}
-		}],
+		],
 		"configuration": {
 			"title": "ConEmu Launcher",
 			"properties": {
@@ -57,7 +59,7 @@
 				}
 			}
 		},
-		"keybindings":[
+		"keybindings": [
 			{
 				"command": "vscode.conemu",
 				"key": "shift+alt+c",
@@ -65,18 +67,24 @@
 			}
 		],
 		"menus": {
-			"explorer/context": [{
-				"command": "vscode.conemu",
-				"group": "navigation@99"
-			}],
-			"editor/title/context": [{
-				"command": "vscode.conemu"
-			}],
-			"editor/title": [{
-				"command": "vscode.conemu",
-				"group": "navigation",
-				"when": "config.ConEmu.showTitlebarIcon"
-			}]
+			"explorer/context": [
+				{
+					"command": "vscode.conemu",
+					"group": "navigation@99"
+				}
+			],
+			"editor/title/context": [
+				{
+					"command": "vscode.conemu"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "vscode.conemu",
+					"group": "navigation",
+					"when": "config.ConEmu.showTitlebarIcon"
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -89,5 +97,10 @@
 		"@types/node": "^7.0.5",
 		"typescript": "^2.1.5",
 		"vscode": "^1.0.3"
+	},
+	"__metadata": {
+		"id": "0a1d7676-8e6c-46f6-bdc9-acde05fd150f",
+		"publisherDisplayName": "Ireneusz Patalas",
+		"publisherId": "3fa42ac4-acba-4d3b-8c70-b7c093d969e6"
 	}
 }
